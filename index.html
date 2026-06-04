@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audition Eligibility Check</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --dark: #1A1612;
+    --mid: #2E2820;
+    --surface: #F9F5EE;
+    --muted: #8A7F72;
+    --red: #C0392B;
+    --green: #1E7D4B;
+    --border: #D9CEB8;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--surface);
+    color: var(--dark);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .widget {
+    width: 100%;
+    max-width: 520px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    box-shadow: 0 4px 40px rgba(0,0,0,0.08);
+    overflow: hidden;
+  }
+
+  .widget-header {
+    background: var(--dark);
+    padding: 28px 32px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .widget-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+  }
+
+  .widget-header::after {
+    content: '♪';
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 52px;
+    color: rgba(201,168,76,0.15);
+    line-height: 1;
+  }
+
+  .header-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .header-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: #fff;
+    line-height: 1.3;
+  }
+
+  .widget-body {
+    padding: 28px 32px 32px;
+  }
+
+  .instruction {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .field-group {
+    margin-bottom: 14px;
+  }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--dark);
+    background: var(--surface);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  input[type="text"]:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.12);
+    background: #fff;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .row-3 {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  .check-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 14px;
+    background: var(--dark);
+    color: var(--gold);
+    border: none;
+    border-radius: 2px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .check-btn:hover { background: #2E2820; }
+  .check-btn:active { transform: scale(0.99); }
+  .check-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .check-btn .btn-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  /* Result panel */
+  .result {
+    margin-top: 20px;
+    border-radius: 2px;
+    padding: 18px 20px;
+    display: none;
+    animation: fadeSlide 0.3s ease;
+  }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .result.eligible {
+    background: #EBF7F1;
+    border: 1px solid #A8D9BC;
+    display: block;
+  }
+
+  .result.ineligible {
+    background: #FDF0EE;
+    border: 1px solid #E8B4AE;
+    display: block;
+  }
+
+  .result.error {
+    background: #FEF9EC;
+    border: 1px solid #E8D8A0;
+    display: block;
+  }
+
+  .result-icon {
+    font-size: 22px;
+    margin-bottom: 8px;
+  }
+
+  .result-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+
+  .result.eligible .result-title { color: var(--green); }
+  .result.ineligible .result-title { color: var(--red); }
+  .result.error .result-title { color: #8A6800; }
+
+  .result-body {
+    font-size: 13px;
+    line-height: 1.6;
+    color: #444;
+  }
+
+  .distance-badge {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .eligible .distance-badge { background: #C8EDD8; color: var(--green); }
+  .ineligible .distance-badge { background: #F5C9C3; color: var(--red); }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(201,168,76,0.3);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .api-key-note {
+    margin-top: 18px;
+    padding: 12px 14px;
+    background: #F0EDE8;
+    border-left: 3px solid var(--gold);
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .api-key-note strong { color: var(--dark); }
+</style>
+</head>
+<body>
+
+<div class="widget">
+  <div class="widget-header">
+    <div class="header-label">Regional Audition</div>
+    <div class="header-title">Location Eligibility Check</div>
+  </div>
+
+  <div class="widget-body">
+    <p class="instruction">
+      Auditions are open to singers residing within <strong>270 miles of Knoxville, TN</strong>.
+      Please enter your home address below to verify your eligibility before continuing.
+    </p>
+
+    <div class="field-group">
+      <label>Street Address</label>
+      <input type="text" id="street" placeholder="123 Main Street" />
+    </div>
+
+    <div class="row-3">
+      <div class="field-group">
+        <label>City</label>
+        <input type="text" id="city" placeholder="Nashville" />
+      </div>
+      <div class="field-group">
+        <label>State</label>
+        <input type="text" id="state" placeholder="TN" maxlength="2" />
+      </div>
+      <div class="field-group">
+        <label>ZIP Code</label>
+        <input type="text" id="zip" placeholder="37901" maxlength="10" />
+      </div>
+    </div>
+
+    <button class="check-btn" onclick="checkEligibility()" id="checkBtn">
+      <span class="btn-inner">
+        <span class="spinner" id="spinner"></span>
+        <span id="btnText">Check My Eligibility</span>
+      </span>
+    </button>
+
+    <div class="result" id="result">
+      <div class="result-icon" id="resultIcon"></div>
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-body" id="resultBody"></div>
+      <div class="distance-badge" id="distanceBadge"></div>
+    </div>
+
+
+  </div>
+</div>
+
+<script>
+  // ─── CONFIGURATION ───────────────────────────────────────────────
+  const GOOGLE_API_KEY = 'AIzaSyA2YLVfW-RIc_Hs2-Z1WBryVxtNE6r3vxQ';
+  const GOOGLE_API_KEY_BACKUP = 'AIzaSyDEpvGnu6SWojB5xCPXklhb4BADLkHJlxA';
+  const ORIGIN_LAT = 35.9606;   // Knoxville, TN latitude
+  const ORIGIN_LNG = -83.9207;  // Knoxville, TN longitude
+  const MAX_MILES = 270;        // Maximum allowed distance
+  // ─────────────────────────────────────────────────────────────────
+
+  function toRad(deg) { return deg * Math.PI / 180; }
+
+  // Haversine formula — straight-line distance between two lat/lng points
+  function haversineDistance(lat1, lng1, lat2, lng2) {
+    const R = 3958.8; // Earth radius in miles
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2)
+            + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2))
+            * Math.sin(dLng/2) * Math.sin(dLng/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  async function checkEligibility() {
+    const street = document.getElementById('street').value.trim();
+    const city   = document.getElementById('city').value.trim();
+    const state  = document.getElementById('state').value.trim();
+    const zip    = document.getElementById('zip').value.trim();
+
+    if (!city && !zip) {
+      showResult('error', '⚠️', 'Missing Address',
+        'Please enter at least your city and state (or ZIP code) to check eligibility.', '');
+      return;
+    }
+
+    const address = [street, city, state, zip].filter(Boolean).join(', ');
+
+    setLoading(true);
+    hideResult();
+
+    try {
+      let data;
+      try {
+        const geoUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_API_KEY}`;
+        const response = await fetch(geoUrl);
+        data = await response.json();
+        if (data.status === 'REQUEST_DENIED' || data.status === 'INVALID_REQUEST') throw new Error('Primary key failed');
+      } catch (primaryErr) {
+        // Fall back to backup key
+        const geoUrlBackup = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_API_KEY_BACKUP}`;
+        const responseBackup = await fetch(geoUrlBackup);
+        data = await responseBackup.json();
+      }
+
+      if (!data.results || data.results.length === 0) {
+        showResult('error', '⚠️', 'Address Not Found',
+          'We couldn\'t locate that address. Please double-check your entry and try again.', '');
+        return;
+      }
+
+      const loc = data.results[0].geometry.location;
+      const distance = haversineDistance(ORIGIN_LAT, ORIGIN_LNG, loc.lat, loc.lng);
+      const distanceRounded = Math.round(distance);
+
+      if (distance <= MAX_MILES) {
+        showResult('eligible', '✓', 'You\'re Eligible!',
+          `Your address is within the regional audition area. You may proceed with your application.`,
+          `${distanceRounded} miles from Knoxville, TN`);
+        notifyJotForm(true);
+      } else {
+        showResult('ineligible', '✗', 'Outside Audition Area',
+          `We\'re sorry — this audition is only open to singers residing within ${MAX_MILES} miles of Knoxville, TN. Your address does not qualify.`,
+          `${distanceRounded} miles from Knoxville, TN`);
+        notifyJotForm(false);
+      }
+
+    } catch (err) {
+      showResult('error', '⚠️', 'Connection Error',
+        'There was a problem verifying your address. Please check your internet connection and try again.', '');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function notifyJotForm(isEligible) {
+    const value = isEligible ? 'eligible' : 'ineligible';
+    try {
+      // JotForm iFrame widget value setter
+      window.parent.postMessage(JSON.stringify({
+        type: 'setCustomFieldValue',
+        fieldName: 'eligibility_status',
+        value: value
+      }), '*');
+
+      // JotForm input change format
+      window.parent.postMessage(JSON.stringify({
+        type: 'inputTextChange',
+        fieldName: 'eligibility_status',
+        value: value
+      }), '*');
+
+      // JotForm Custom Widget API if available
+      if (typeof JFCustomWidget !== 'undefined') {
+        JFCustomWidget.sendSubmit({ value: value });
+      }
+    } catch(e) {
+      console.log('postMessage error:', e);
+    }
+  }
+
+  function showResult(type, icon, title, body, badge) {
+    const el = document.getElementById('result');
+    el.className = `result ${type}`;
+    el.style.display = 'block'; // explicitly override any inline style
+    document.getElementById('resultIcon').textContent = icon;
+    document.getElementById('resultTitle').textContent = title;
+    document.getElementById('resultBody').textContent = body;
+    const badgeEl = document.getElementById('distanceBadge');
+    badgeEl.textContent = badge;
+    badgeEl.style.display = badge ? 'inline-block' : 'none';
+  }
+
+  function hideResult() {
+    const el = document.getElementById('result');
+    el.className = 'result';
+    el.style.display = 'none';
+  }
+
+  function setLoading(loading) {
+    document.getElementById('checkBtn').disabled = loading;
+    document.getElementById('spinner').style.display = loading ? 'block' : 'none';
+    document.getElementById('btnText').textContent = loading ? 'Checking...' : 'Check My Eligibility';
+  }
+</script>
+
+</body>
+</html>
