@@ -402,21 +402,42 @@
   function notifyJotForm(isEligible) {
     const value = isEligible ? 'eligible' : 'ineligible';
     try {
-      // JotForm iFrame widget value setter
+      // Method 1: unique field name
       window.parent.postMessage(JSON.stringify({
         type: 'setCustomFieldValue',
         fieldName: 'eligibility_status',
         value: value
       }), '*');
 
-      // JotForm input change format
+      // Method 2: field ID
+      window.parent.postMessage(JSON.stringify({
+        type: 'setCustomFieldValue',
+        fieldName: 'input_42',
+        value: value
+      }), '*');
+
+      // Method 3: inputTextChange with unique name
       window.parent.postMessage(JSON.stringify({
         type: 'inputTextChange',
         fieldName: 'eligibility_status',
         value: value
       }), '*');
 
-      // JotForm Custom Widget API if available
+      // Method 4: inputTextChange with field ID
+      window.parent.postMessage(JSON.stringify({
+        type: 'inputTextChange',
+        fieldName: 'input_42',
+        value: value
+      }), '*');
+
+      // Method 5: setFieldValue with field ID
+      window.parent.postMessage(JSON.stringify({
+        action: 'setFieldValue',
+        fieldID: 'input_42',
+        value: value
+      }), '*');
+
+      // Method 6: JFCustomWidget if available
       if (typeof JFCustomWidget !== 'undefined') {
         JFCustomWidget.sendSubmit({ value: value });
       }
@@ -447,6 +468,11 @@
     document.getElementById('checkBtn').disabled = loading;
     document.getElementById('spinner').style.display = loading ? 'block' : 'none';
     document.getElementById('btnText').textContent = loading ? 'Checking...' : 'Check My Eligibility';
+  }
+</script>
+
+</body>
+</html>
   }
 </script>
 
